@@ -73,8 +73,12 @@ FROM customer AS c
 JOIN rental AS r ON r.customer_id = c.customer_id
 JOIN payment AS p ON p.rental_id = r.rental_id AND p.customer_id = c.customer_id
 WHERE c.active = 1
+  AND (
+      SELECT COUNT(*)
+      FROM rental AS r2
+      WHERE r2.customer_id = c.customer_id
+  ) >= 10
 GROUP BY c.customer_id, c.first_name, c.last_name, c.store_id
-HAVING COUNT(DISTINCT r.rental_id) >= 10
 ORDER BY total_spent DESC, total_rentals DESC
 LIMIT 20;
 
@@ -91,8 +95,12 @@ FROM customer AS c
 JOIN rental AS r ON r.customer_id = c.customer_id
 JOIN payment AS p ON p.rental_id = r.rental_id AND p.customer_id = c.customer_id
 WHERE c.active = 1
+  AND (
+      SELECT COUNT(*)
+      FROM rental AS r2
+      WHERE r2.customer_id = c.customer_id
+  ) >= 10
 GROUP BY c.customer_id, c.first_name, c.last_name, c.store_id
-HAVING COUNT(DISTINCT r.rental_id) >= 10
 ORDER BY total_spent DESC, total_rentals DESC
 LIMIT 20;
 
