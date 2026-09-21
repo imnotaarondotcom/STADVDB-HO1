@@ -55,7 +55,7 @@ LIMIT 10;
 -- Estimated cost of query and other relevant execution-plan: Nested Loops and Aggregations raise estimated costs to 55375.
 
 -- =========================================================
--- QUERY 2: Top 20 Customers and their 
+-- QUERY 2: Top 20 Active Customers by Spending and Rental Volume
 -- Analytical question: Who are the top 20 active customers with at least 10 rentals in terms of total amount spent, and what are their rental and payment activity metrics?
 -- Uses: customer + rental + payment
 -- Includes the required correlated subquery.
