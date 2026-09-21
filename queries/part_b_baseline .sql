@@ -30,7 +30,7 @@ GROUP BY c.customer_id, c.first_name, c.last_name
 ORDER BY total_spent DESC
 LIMIT 10;
 
-EXPLAIN
+EXPLAIN FORMAT=JSON
 SELECT
     c.customer_id,
     CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
@@ -82,7 +82,7 @@ GROUP BY c.customer_id, c.first_name, c.last_name, c.store_id
 ORDER BY total_spent DESC, total_rentals DESC
 LIMIT 20;
 
-EXPLAIN
+EXPLAIN FORMAT=JSON
 SELECT
     c.customer_id,
     CONCAT(c.first_name, ' ', c.last_name) AS customer_name,

@@ -56,7 +56,7 @@ JOIN (
 ORDER BY total_spent DESC
 LIMIT 10;
 
-EXPLAIN
+EXPLAIN FORMAT=JSON
 SELECT
     c.customer_id,
     CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
@@ -94,55 +94,65 @@ LIMIT 10;
 -- Estimated cost: 55,502.50 (payment subquery alone: 12,104.25)
 
 -- =========================================================
--- OPTIMIZED QUERY 2: Top 20 customers with highest average payment
+-- QUERY 2: Top 20 Active Customers by Spending and Rental Volume
 -- Technique: Reformulating Subqueries (reuses the Q1 index)
 -- =========================================================
 
 SELECT
     c.customer_id,
     CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
-    p.total_payments,
+    c.store_id,
     p.total_rentals,
-    ROUND(p.average_payment, 2) AS average_payment,
-    ROUND(p.total_spent, 2) AS total_spent
+    p.total_payments,
+    ROUND(p.total_spent, 2) AS total_spent,
+    ROUND(p.average_payment, 2) AS average_payment
 FROM customer AS c
 JOIN (
     SELECT
-        customer_id,
-        COUNT(*) AS total_payments,
-        COUNT(DISTINCT rental_id) AS total_rentals,
-        AVG(amount) AS average_payment,
-        SUM(amount) AS total_spent
-    FROM payment
-    GROUP BY customer_id
-    HAVING COUNT(*) >= 30
-) AS p ON p.customer_id = c.customer_id
+        r.customer_id,
+        COUNT(DISTINCT r.rental_id) AS total_rentals,
+        COUNT(p.payment_id) AS total_payments,
+        SUM(p.amount) AS total_spent,
+        AVG(p.amount) AS average_payment
+    FROM rental AS r
+    JOIN payment AS p
+        ON p.rental_id = r.rental_id
+       AND p.customer_id = r.customer_id
+    GROUP BY r.customer_id
+    HAVING COUNT(DISTINCT r.rental_id) >= 10
+) AS p
+    ON p.customer_id = c.customer_id
 WHERE c.active = 1
-ORDER BY average_payment DESC, c.customer_id ASC
+ORDER BY total_spent DESC, total_rentals DESC
 LIMIT 20;
 
-EXPLAIN
+EXPLAIN FORMAT=JSON
 SELECT
     c.customer_id,
     CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
-    p.total_payments,
+    c.store_id,
     p.total_rentals,
-    ROUND(p.average_payment, 2) AS average_payment,
-    ROUND(p.total_spent, 2) AS total_spent
+    p.total_payments,
+    ROUND(p.total_spent, 2) AS total_spent,
+    ROUND(p.average_payment, 2) AS average_payment
 FROM customer AS c
 JOIN (
     SELECT
-        customer_id,
-        COUNT(*) AS total_payments,
-        COUNT(DISTINCT rental_id) AS total_rentals,
-        AVG(amount) AS average_payment,
-        SUM(amount) AS total_spent
-    FROM payment
-    GROUP BY customer_id
-    HAVING COUNT(*) >= 30
-) AS p ON p.customer_id = c.customer_id
+        r.customer_id,
+        COUNT(DISTINCT r.rental_id) AS total_rentals,
+        COUNT(p.payment_id) AS total_payments,
+        SUM(p.amount) AS total_spent,
+        AVG(p.amount) AS average_payment
+    FROM rental AS r
+    JOIN payment AS p
+        ON p.rental_id = r.rental_id
+       AND p.customer_id = r.customer_id
+    GROUP BY r.customer_id
+    HAVING COUNT(DISTINCT r.rental_id) >= 10
+) AS p
+    ON p.customer_id = c.customer_id
 WHERE c.active = 1
-ORDER BY average_payment DESC, c.customer_id ASC
+ORDER BY total_spent DESC, total_rentals DESC
 LIMIT 20;
 
 -- Record after execution:
